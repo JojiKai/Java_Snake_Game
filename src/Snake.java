@@ -25,6 +25,10 @@ public class Snake {
         snakeBody.add(new Node(20, 0));  // 蛇尾
     }
 
+    public ArrayList<Node> getSnakeBody() {
+        return snakeBody;
+    }
+
     // 畫出整條蛇的方法
     public void drawSnake(Graphics g) {
         g.setColor(Color.GREEN); // 設定蛇的顏色

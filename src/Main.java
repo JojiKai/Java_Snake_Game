@@ -1,5 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
+import java.util.Timer;
+
 
 public class Main extends JPanel {
 
@@ -20,21 +23,59 @@ public class Main extends JPanel {
     // 貪食蛇的實例（由 Snake 類別管理）
     private Snake snake;  // 宣告一個snake類別成員變數
 
+    private Timer t;
+
+    private static  String direction;
+
+    private  int speed = 100;
+
+
     // 建構子：初始化蛇
     public Main() {
         snake = new Snake(); // 建立一條新蛇
         fruit = new Fruit();
+        t = new Timer();
+        t.scheduleAtFixedRate(new  TimerTask() {
+            @Override
+            public void run() {
+                repaint();
+            }
+        },0,speed);
+        direction="Right";
     }
 
 
     // 畫面重繪方法，JPanel 會在需要時自動呼叫
     @Override
     public void paintComponent(Graphics g) {
+        System.out.println("We are calling paintComponent...");
         // 填滿背景（可自行加上顏色設定）
         g.fillRect(0, 0, width, height);
         // 呼叫蛇自己的畫圖方法
         snake.drawSnake(g);
         fruit.drawFruit(g);
+
+        int snakeX = snake.getSnakeBody().get(0).x;
+        int snakeY = snake.getSnakeBody().get(0).y;
+        // right,x += Cell_size
+        if(direction.equals("Right")) {
+            snakeX += CELL_SIZE;
+        }
+        // left, x -= cell_size
+        else if(direction.equals("Left")) {
+            snakeX -= CELL_SIZE;
+        }
+        // down,y += cell_size
+        else if(direction.equals("Down")) {
+            snakeY += CELL_SIZE;
+        }
+        // up,y  -= cell_size
+        else if(direction.equals("Up")) {
+            snakeY -= CELL_SIZE;
+        }
+        Node newHead = new Node(snakeX,snakeY);
+        snake.getSnakeBody().remove(snake.getSnakeBody().size()-1);
+        snake.getSnakeBody().add(0,newHead);
     }
 
     // 告訴 JFrame 我們這個 JPanel 希望的畫面大小
