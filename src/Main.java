@@ -1,97 +1,133 @@
-import javax.swing.*;
-import java.awt.*;
-import java.util.*;
-import java.util.Timer;
+import javax.swing.*;     // 引入 Swing 視窗元件
+import java.awt.*;        // 引入繪圖相關類別
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.*;       // 引入常用集合類別
+import java.util.Timer;   // 引入 java.util.Timer 類別（排程用）
 
+public class Main extends JPanel implements KeyListener {
 
-public class Main extends JPanel {
-
-    // 每一格的大小（像素），貪食蛇和食物會以這個單位為基礎移動
+    // 每一格的像素大小，貪食蛇和果實都以此為單位移動
     public static final int CELL_SIZE = 20;
 
-    // 遊戲畫面寬與高（像素）
+    // 遊戲畫面寬高（以像素計）
     public static int width = 600;
     public static int height = 600;
 
-    // 計算可以容納的行與列數（以格子計）
+    // 計算格子數（行數與列數）
     public static int row = width / CELL_SIZE;
     public static int column = height / CELL_SIZE;
 
-    // 果實的實例（由 fruit 類別管理）
+    // 遊戲中的果實物件
     private Fruit fruit;
-
-    // 貪食蛇的實例（由 Snake 類別管理）
-    private Snake snake;  // 宣告一個snake類別成員變數
-
+    // 遊戲中的貪食蛇物件
+    private Snake snake;
+    // 用於定時呼叫 repaint() 的定時器
     private Timer t;
+    // 目前蛇的移動方向
+    private static String direction;
+    // 蛇移動速度（單位：毫秒）
+    private int speed = 100;
 
-    private static  String direction;
+    private  boolean allowKeyPress;
 
-    private  int speed = 100;
-
-
-    // 建構子：初始化蛇
+    // 建構子：初始化遊戲內容
     public Main() {
-        snake = new Snake(); // 建立一條新蛇
-        fruit = new Fruit();
+        snake = new Snake();     // 建立蛇物件
+        fruit = new Fruit();     // 建立果實物件
+
+        // 建立定時器，每 100 毫秒重繪一次畫面
         t = new Timer();
-        t.scheduleAtFixedRate(new  TimerTask() {
+        t.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                repaint();
+                repaint();       // 觸發 Swing 重繪，會呼叫 paintComponent()
             }
-        },0,speed);
-        direction="Right";
+        }, 0, speed);
+
+        direction = "Right";     // 初始方向向右
+        addKeyListener(this);
+        setFocusable(true);            // 讓 JPanel 可取得焦點
+        requestFocusInWindow();        // 請求鍵盤焦點
+        allowKeyPress=true;
     }
 
 
-    // 畫面重繪方法，JPanel 會在需要時自動呼叫
+    // 繪圖方法（Swing 框架會自動呼叫）
     @Override
     public void paintComponent(Graphics g) {
-        System.out.println("We are calling paintComponent...");
-        // 填滿背景（可自行加上顏色設定）
+//        System.out.println("We are calling paintComponent...");
+
+        // 清除背景（未指定顏色，使用預設）
         g.fillRect(0, 0, width, height);
-        // 呼叫蛇自己的畫圖方法
+
+        // 畫出蛇與果實
         snake.drawSnake(g);
         fruit.drawFruit(g);
 
+        // 取得目前蛇頭的位置
         int snakeX = snake.getSnakeBody().get(0).x;
         int snakeY = snake.getSnakeBody().get(0).y;
-        // right,x += Cell_size
-        if(direction.equals("Right")) {
+
+        // 根據目前方向計算新的蛇頭位置
+        if (direction.equals("Right")) {
             snakeX += CELL_SIZE;
-        }
-        // left, x -= cell_size
-        else if(direction.equals("Left")) {
+        } else if (direction.equals("Left")) {
             snakeX -= CELL_SIZE;
-        }
-        // down,y += cell_size
-        else if(direction.equals("Down")) {
+        } else if (direction.equals("Down")) {
             snakeY += CELL_SIZE;
-        }
-        // up,y  -= cell_size
-        else if(direction.equals("Up")) {
+        } else if (direction.equals("Up")) {
             snakeY -= CELL_SIZE;
         }
-        Node newHead = new Node(snakeX,snakeY);
-        snake.getSnakeBody().remove(snake.getSnakeBody().size()-1);
-        snake.getSnakeBody().add(0,newHead);
+
+        // 建立新蛇頭節點，加入到 snake 的身體最前端
+        Node newHead = new Node(snakeX, snakeY);
+        snake.getSnakeBody().remove(snake.getSnakeBody().size() - 1); // 移除尾巴
+        snake.getSnakeBody().add(0, newHead); // 加入新頭
+        allowKeyPress = true;
     }
 
-    // 告訴 JFrame 我們這個 JPanel 希望的畫面大小
+    // 回傳畫布建議尺寸，提供 JFrame 調整用
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(width, height);
     }
 
-    // 主程式入口點
+    // 主方法，程式進入點
     public static void main(String[] args) {
-        JFrame window = new JFrame("Sanke Game"); // 建立視窗並設定標題
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 點右上角關閉即結束程式
-        window.setContentPane(new Main()); // 將我們自訂的 JPanel 放進視窗中
-        window.pack(); // 根據 getPreferredSize() 調整視窗大小
-        window.setLocationRelativeTo(null); // 將視窗置中顯示
-        window.setVisible(true); // 顯示視窗
-        window.setResizable(false); // 禁止使用者改變視窗大小
+        JFrame window = new JFrame("Sanke Game");               // 建立視窗
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  // 關閉視窗即結束程式
+        window.setContentPane(new Main());                      // 放入我們的遊戲面板
+        window.pack();                                          // 自動調整大小
+        window.setLocationRelativeTo(null);                     // 視窗置中
+        window.setVisible(true);                                // 顯示視窗
+        window.setResizable(false);                             // 禁止改變大小
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        // 不能180度掉頭
+        if(allowKeyPress){
+            if(e.getKeyCode() == 37 && !direction.equals("Right")) {
+                direction = "Left";
+            }else if(e.getKeyCode() == 38 && !direction.equals("Down")) {
+                direction = "Up";
+            }else if(e.getKeyCode() == 39 && !direction.equals("Left")) {
+                direction="Right";
+            }else if(e.getKeyCode() == 40 && !direction.equals("Up")) {
+                direction = "Down";
+            }
+            allowKeyPress = false;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
     }
 }
