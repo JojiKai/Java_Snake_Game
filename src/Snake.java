@@ -35,8 +35,29 @@ public class Snake {
 
     // 畫出蛇的所有身體節點
     public void drawSnake(Graphics g) {
-        g.setColor(Color.GREEN); // 設定畫蛇的顏色
-        for (Node n : snakeBody) {
+        // 設定畫蛇的顏色
+        for (int i =0;i < snakeBody.size();i++) {
+            if(i == 0){
+                g.setColor(Color.YELLOW);
+            }else {
+                g.setColor(Color.GREEN);
+            }
+
+            Node n =snakeBody.get(i);
+
+            if(n.x >= Main.width ){
+                n.x = 0;
+            }
+            if(n.x < 0){
+                n.x = Main.width-Main.CELL_SIZE;
+            }
+            if(n.y >= Main.height ){
+                n.y = 0;
+            }
+            if(n.y < 0){
+                n.y = Main.height-Main.CELL_SIZE;
+            }
+
             // 用圓形畫出每一節蛇的身體
             g.fillOval(n.x, n.y, Main.CELL_SIZE, Main.CELL_SIZE);
         }
