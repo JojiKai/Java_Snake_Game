@@ -37,12 +37,20 @@ public class Main extends JPanel implements KeyListener {
     // 控制方向鍵不能連續按（避免同一次 repaint 被觸發多次鍵盤事件）
     private boolean allowKeyPress;
 
+    private int score;
+
     // 建構子：初始化遊戲內容
     public Main() {
-        snake = new Snake();     // 建立蛇物件
-        fruit = new Fruit();     // 建立果實物件
+        reset();
 
-        // 建立定時器，每隔固定時間觸發 repaint() 更新畫面與邏輯
+        // 註冊鍵盤監聽器
+        addKeyListener(this);
+        setFocusable(true);            // 讓 JPanel 可取得焦點
+        requestFocusInWindow();        // 請求鍵盤焦點
+    }
+
+    // 建立定時器，每隔固定時間觸發 repaint() 更新畫面與邏輯
+    private void setTimer(){
         t = new Timer();
         t.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -50,19 +58,55 @@ public class Main extends JPanel implements KeyListener {
                 repaint();       // 觸發 Swing 重繪，會呼叫 paintComponent()
             }
         }, 0, speed);            // 初始延遲 0ms，每隔 speed 毫秒執行一次
+    }
 
-        direction = "Right";     // 初始方向向右
-
-        // 註冊鍵盤監聽器
-        addKeyListener(this);
-        setFocusable(true);            // 讓 JPanel 可取得焦點
-        requestFocusInWindow();        // 請求鍵盤焦點
-        allowKeyPress = true;          // 開放第一次方向變更
+    public  void reset(){
+        score = 0;
+        if(snake != null){
+            snake.getSnakeBody().clear();
+        }
+        allowKeyPress = true;
+        direction = "Right";
+        snake = new Snake();
+        fruit = new Fruit();
+        setTimer();
     }
 
     // 繪圖方法（Swing 框架會自動呼叫），每次 repaint() 時執行
     @Override
     public void paintComponent(Graphics g) {
+        // 檢查頭部是否撞到身體
+        ArrayList<Node> snake_body = snake.getSnakeBody();
+        Node head = snake_body.get(0);
+        for(int i = 1;i< snake_body.size();i++){
+            if(snake_body.get(i).x == head.x && snake_body.get(i).y == head.y){
+                allowKeyPress = false;
+                t.cancel();
+                t.purge();
+                int response = JOptionPane.showOptionDialog(
+                        this,
+                        "Game Over!! Would you like to start over?", // 顯示的文字
+                        "Game Over",                                 // 對話框標題
+                        JOptionPane.YES_NO_OPTION,                   // 是 / 否選項
+                        JOptionPane.INFORMATION_MESSAGE,             // 顯示 info icon
+                        null, null,                           // 沒有圖示、選項物件
+                        JOptionPane.YES_OPTION                       // 預設選「是」
+                );
+                switch (response){
+                    case  JOptionPane.CLOSED_OPTION:
+                        System.exit(0);
+                        break;
+                    case JOptionPane.NO_OPTION:
+                        System.exit(0);
+                        break;
+                    case JOptionPane.YES_OPTION:
+                        reset();
+                        return;
+                }
+            }
+        }
+
+
         // 清除背景（填滿整個畫布）
         g.fillRect(0, 0, width, height);
 
