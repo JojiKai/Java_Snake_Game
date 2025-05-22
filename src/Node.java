@@ -5,7 +5,7 @@ public class Node {
 
     // 建構子：初始化座標
     public Node(int x, int y) {
-        this.x = x;
-        this.y = y;
+        this.x = x; // 設定該節點的 x 座標
+        this.y = y; // 設定該節點的 y 座標
     }
 }
