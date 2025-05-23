@@ -41,6 +41,8 @@ public class Main extends JPanel implements KeyListener {
 
     private int score;             // 本次遊戲得分
     private int highest_score;     // 最高得分（從 scores.txt 讀取）
+    String destkop = System.getProperty("user.home") + "/Desktop/";
+    String myFile = destkop + "scores.txt";
 
     // 建構子：初始化畫面、遊戲物件與監聽器
     public Main() {
@@ -177,14 +179,14 @@ public class Main extends JPanel implements KeyListener {
     // 從檔案讀取最高分數（若無檔案則建立）
     public void read_highest_score() {
         try {
-            File myObj = new File("scores.txt");
+            File myObj = new File(myFile);
             Scanner myReader = new Scanner(myObj);
             highest_score = myReader.nextInt();
             myReader.close();
         } catch (FileNotFoundException e) {
             highest_score = 0; // 預設為 0
             try {
-                File myObj = new File("scores.txt");
+                File myObj = new File(myFile);
                 if (myObj.createNewFile()) {
                     System.out.println("File created : " + myObj.getName());
                 }
@@ -201,7 +203,7 @@ public class Main extends JPanel implements KeyListener {
     // 寫入最高分數（若目前分數超過最高分）
     public void write_highest_score(int score) {
         try {
-            FileWriter myWriter = new FileWriter("scores.txt");
+            FileWriter myWriter = new FileWriter(myFile);
             if (score > highest_score) {
                 myWriter.write("" + score);
                 highest_score = score;
